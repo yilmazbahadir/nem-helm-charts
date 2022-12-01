@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "nem-client.fullname" . }}
+  labels:
+    {{- include "nem-client.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  {{- if eq .Values.service.type "LoadBalancer" }}
+  allocateLoadBalancerNodePorts: false
+  {{- end }}
+  ports:
+    - port: {{ .Values.service.httpPort }}
+      {{- if eq .Values.service.type "NodePort" }}
+      nodePort: {{ .Values.service.httpPort }}
+      {{- end }}
+      protocol: TCP
+      name: http
+    - port: {{ .Values.service.httpsPort }}
+      {{- if eq .Values.service.type "NodePort" }}
+      nodePort: {{ .Values.service.httpsPort }}
+      {{- end }}
+      protocol: TCP
+      name: https
+    - port: {{ .Values.service.wsPort }}
+      {{- if eq .Values.service.type "NodePort" }}
+      nodePort: {{ .Values.service.wsPort }}
+      {{- end }}
+      protocol: TCP
+      name: websocket
+  selector:
+    {{- include "nem-client.selectorLabels" . | nindent 4 }}
