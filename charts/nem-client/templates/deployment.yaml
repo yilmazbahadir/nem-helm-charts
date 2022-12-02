@@ -47,19 +47,29 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-          - mountPath: /usersettings/config-user.properties
-            name: "config-user"
+          - mountPath: /usersettings/config.properties
+            name: "config"
             subPath: "configuser.properties"
           {{- if .Values.config.user.customNemesisFileBase64 }}
           - mountPath: /usersettings/nemesis.bin
-            name: "config-user"
+            name: "config"
             subPath: "nemesis-file"
+          {{- end }}
+          {{- if .Values.config.peersconfigjson }}
+          - mountPath: /usersettings/{{ include "peers.json.filename" .}}
+            name: "config"
+            subPath: {{ include "peers.json.filename" .}}
+          {{- end }}
+          {{- if .Values.config.dbproperties }}
+          - mountPath: /usersettings/db.properties
+            name: "config"
+            subPath: "db.properties"
           {{- end }}
           - mountPath: /home/nem/nem
             name: "nem-data"
             subPath: "nem"
       volumes:
-      - name: config-user
+      - name: config
         configMap:
           name: config-map
           items:
@@ -68,6 +78,14 @@ spec:
           {{- if .Values.config.user.customNemesisFileBase64 }}
           - key: "nemesis-file"
             path: "nemesis-file"
+          {{- end }}
+          {{- if .Values.config.peersconfigjson }}
+          - key: {{ include "peers.json.filename" . | quote}}
+            path: {{ include "peers.json.filename" . | quote}}
+          {{- end }}
+          {{- if .Values.config.dbproperties }}
+          - key: "db.properties"
+            path: "db.properties"
           {{- end }}
       - name: nem-data
         persistentVolumeClaim:

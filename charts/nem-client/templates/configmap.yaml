@@ -7,6 +7,18 @@ data:
     {{- range $key, $value := .Values.config.user}}
     {{ $key }}={{ $value }}
     {{- end }}
+  {{- if .Values.config.logalphaproperties }}
+  logalpha.properties: |-
+    {{ .Values.config.logalphaproperties | nindent 4}}
+  {{- end }}
+  {{- if .Values.config.dbproperties }}
+  db.properties: |-
+    {{ .Values.config.dbproperties | nindent 4}}
+  {{- end }}
+  {{- if .Values.config.peersconfigjson }}
+  {{ include "peers.json.filename" . | nindent 2}}: |-
+    {{ .Values.config.peersconfigjson | nindent 4}}
+  {{- end }}
 binaryData:
   {{ if .Values.config.user.customNemesisFileBase64 }}
   nemesis-file: {{ .Values.config.user.customNemesisFileBase64 }}

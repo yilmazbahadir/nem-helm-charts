@@ -60,3 +60,10 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+peers.json file name
+*/}}
+{{- define "peers.json.filename" -}}
+peers-config_{{ print (index .Values.config.user "nem.network") }}.json
+{{- end }}
