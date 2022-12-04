@@ -55,12 +55,12 @@ spec:
             name: "config"
             subPath: "nemesis-file"
           {{- end }}
-          {{- if .Values.config.peersconfigjson }}
+          {{- if .Values.config.peersConfigJson }}
           - mountPath: /usersettings/{{ include "peers.json.filename" .}}
             name: "config"
             subPath: {{ include "peers.json.filename" .}}
           {{- end }}
-          {{- if .Values.config.dbproperties }}
+          {{- if .Values.config.dbProperties }}
           - mountPath: /usersettings/db.properties
             name: "config"
             subPath: "db.properties"
@@ -79,11 +79,11 @@ spec:
           - key: "nemesis-file"
             path: "nemesis-file"
           {{- end }}
-          {{- if .Values.config.peersconfigjson }}
+          {{- if .Values.config.peersConfigJson }}
           - key: {{ include "peers.json.filename" . | quote}}
             path: {{ include "peers.json.filename" . | quote}}
           {{- end }}
-          {{- if .Values.config.dbproperties }}
+          {{- if .Values.config.dbProperties }}
           - key: "db.properties"
             path: "db.properties"
           {{- end }}

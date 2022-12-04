@@ -2,100 +2,82 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+# -- Overrides the chart's name
+nameOverride: ""
+
+# -- Overrides the chart's computed fullname
+fullnameOverride: ""
+
+# -- Number of replicas
 replicaCount: 1
 
 image:
+  # -- nis-client image repository
   repository: nis-client
-  pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  # TODO => latest@sha256:cec3ca42c9f7af54fe0b8e7840aee50d322182bb66df28d5bbe645efa2881a7b
+  # -- nis-client image tag
   tag: "latest"
+  # TODO => latest@sha256:cec3ca42c9f7af54fe0b8e7840aee50d322182bb66df28d5bbe645efa2881a7b
+  # -- nis-client image pull policy
+  pullPolicy: IfNotPresent
 
+# -- Image pull secrets for Docker images
 imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
 
 #TODO: we may not need this
 clusterName: docker-desktop
 
+# -- Config object for nisproperties files
+# @default -- See `values.yaml`
 config:
+  # -- config-user.properties
+  # @default -- See `values.yaml`
   user:
+    # -- nem network: mainnet|testnet
     nem.network: mainnet
+    # -- api/peer http port
+    nem.httpPort: 7890
+    # -- api/peer https port
+    nem.httpsPort: 7891
+    # -- api/peer websocket port
+    nem.websocketPort: 7778
+    # -- hostname/ip e.g. example.com
+    nem.host: 127.0.0.1
+    # -- nemesis.bin file path, leave empty when no custom nemesis files
     # nem.network.nemesisFilePath: /usersettings/nemesis.bin
-    # nis.unlockedLimit: 4
     # nis.bootKey: PrivateKeyToBeReplaced
     # nis.bootName: MyNodeName
 
-    # base64 encoded nemesis.bin file content
+    # config.user.customNemesisFileBase64 -- base64 encoded nemesis.bin file content
     # customNemesisFileBase64: data
-  logalphaproperties: |-
-    handlers = java.util.logging.ConsoleHandler, java.util.logging.FileHandler
-    .level = INFO
+  # config.logalphaProperties -- (string) nis-client logalpha.properties file content as multi-line string
+  logalphaProperties:
+  # config.dbProperties -- (string) nis-client db.properties file content as multi-line string
+  dbProperties:
+  # config.peersConfigJson -- (string) nis-client peers-config.json file content as multi-line string
+  peersConfigJson:
 
-    java.util.logging.ConsoleHandler.formatter = org.nem.deploy.ColorConsoleFormatter
-    java.util.logging.ConsoleHandler.level = INFO
-
-    java.util.logging.FileHandler.formatter = org.nem.deploy.NemFormatter
-    java.util.logging.FileHandler.limit = 100000000
-    java.util.logging.FileHandler.count = 100
-    java.util.logging.FileHandler.pattern = ${nem.folder}/nis/logs/nis-%g.log
-
-    java.util.logging.SimpleFormatter.format = %1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS.%1$tL %4$s %5$s%6$s (%2$s)%n
-
-  dbproperties: |-
-    # suppress inspection "UnusedProperty" for whole file
-    jdbc.driverClassName=org.h2.Driver
-    #
-    #${nem.folder} will be replaced by the setting from nem.folder
-    #
-    jdbc.url=jdbc:h2:${nem.folder}/nis/data/nis5_${nem.network};DB_CLOSE_DELAY=-1
-    jdbc.username=
-    jdbc.password=
-
-    hibernate.dialect=org.hibernate.dialect.H2Dialect
-    hibernate.show_sql=false
-    hibernate.use_sql_comments=false
-    hibernate.jdbc.batch_size=20
-    hibernate.query.startup_check=false
-
-    flyway.locations=db/h2
-
-  peersconfigjson: |-
-    {
-      "_info": "this file contains a list of all trusted peers and can be shared",
-      "knownPeers": [
-        {
-          "endpoint": {
-            "host": "62.75.251.134",
-            "port": 7890,
-            "protocol": "http"
-          },
-          "identity": {
-            "name": "alice2",
-            "public-key": "cd94cdcfde6878e093bc70e35b575dbe68095c69f73112e67559f71c1fb64c6e"
-          }
-        }
-      ]
-    }
 serviceAccount:
-  # Specifies whether a service account should be created
+  # -- Specifies whether a service account should be created
   create: true
-  # Annotations to add to the service account
+  # -- Annotations to add to the service account
   annotations: {}
-  # The name of the service account to use.
+  # -- The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
+# -- Pod annotations
 podAnnotations: {}
 
+# -- The security context for pods
+# @default -- See `values.yaml`
 podSecurityContext:
   runAsUser: 11001
   fsGroup: 11001
   runAsGroup: 11001
+  runAsNonRoot: true
 
-securityContext:
-  runAsUser: 11001
-  runAsGroup: 11001
+# -- The security context for containers
+containerSecurityContext: {}
 
 # -- Liveness probe
 # @default -- See `values.yaml`
@@ -114,11 +96,56 @@ readinessProbe:
   periodSeconds: 10
 
 service:
-  # type: ClusterIP
+  # -- Service type: ClusterIP|LoadBalancer|NodePort
   type: LoadBalancer
-  httpPort: 7890
-  httpsPort: 7891
-  wsPort: 7778
+
+# -- Update strategy for the StatefulSet
+updateStrategy:
+  # -- Update strategy type
+  type: RollingUpdate
+
+# -- Additional init containers
+initContainers: []
+# - name: my-init-container
+#   image: busybox:latest
+#   command: ['sh', '-c', 'echo hello']
+
+# -- Additional containers
+extraContainers: []
+
+# -- Additional volumes
+extraVolumes: []
+
+# -- Additional volume mounts
+extraVolumeMounts: []
+
+# -- Additional ports. Useful when using extraContainers or extraContainerPorts
+extraPorts: []
+
+# -- Additional ports for the main container
+extraContainerPorts: []
+
+# -- Additional env variables
+extraEnv: []
+
+initChownData:
+  # -- Init container to set the correct permissions to access data directories
+  enabled: true
+  image:
+    # -- Container repository
+    repository: busybox
+    # -- Container tag
+    tag: "1.34.0"
+    # -- Container pull policy
+    pullPolicy: IfNotPresent
+  # -- Resource requests and limits
+  resources: {}
+  #  limits:
+  #    cpu: 100m
+  #    memory: 128Mi
+  #  requests:
+  #    cpu: 100m
+  #    memory: 128Mi
 
 ingress:
   enabled: false
@@ -150,6 +177,9 @@ resources: {}
 
 nodeSelector: {}
 
+# -- Tolerations for pods
+## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
 tolerations: []
 
+# -- Affinity configuration for pods
 affinity: {}
