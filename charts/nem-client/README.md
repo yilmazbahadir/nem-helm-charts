@@ -1,6 +1,6 @@
 # nem-client
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.16.0](https://img.shields.io/badge/AppVersion-1.16.0-informational?style=flat-square)
+![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 
 nem-client Helm chart for Kubernetes
 
@@ -60,7 +60,6 @@ base64 -i nemesis.bin -o PATH_TO_FILE/nemesis-base64.txt
 ```bash
 helm install testnet ./charts/nem-client --create-namespace --namespace=testnet --set-file config.user.customNemesisFileBase64= PATH_TO_FILE/nemesis-base64.txt --set clusterName=$(kubectl config view -o jsonpath='{.clusters[].name}{"\n"}') --set config.user.nem.network=testnet --set config.user.nis.bootKey=PrivateKey --set config.user.nis.bootName=MyNodeName
 ```
-
 
 ## Values
 
