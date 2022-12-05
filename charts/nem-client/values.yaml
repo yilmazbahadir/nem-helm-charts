@@ -42,13 +42,15 @@ config:
     nem.websocketPort: 7778
     # -- hostname/ip e.g. example.com
     nem.host: 127.0.0.1
-    # -- nemesis.bin file path, leave empty when no custom nemesis files
-    # nem.network.nemesisFilePath: /usersettings/nemesis.bin
-    # nis.bootKey: PrivateKeyToBeReplaced
-    # nis.bootName: MyNodeName
-
-    # config.user.customNemesisFileBase64 -- base64 encoded nemesis.bin file content
-    # customNemesisFileBase64: data
+    # -- nemesis.bin file path, leave empty when no custom nemesis files, set to /usersettings/nemesis.bin otherwise
+    nem.network.nemesisFilePath:
+    # -- main account private key
+    # @default new account will be generated and set
+    nis.bootKey:
+    # -- name of the NIS node
+    nis.bootName:
+  # -- base64 encoded nemesis.bin file content
+  customNemesisFileBase64:
   # config.logalphaProperties -- (string) nis-client logalpha.properties file content as multi-line string
   logalphaProperties:
   # config.dbProperties -- (string) nis-client db.properties file content as multi-line string

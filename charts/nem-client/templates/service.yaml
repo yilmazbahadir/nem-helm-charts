@@ -10,21 +10,21 @@ spec:
   allocateLoadBalancerNodePorts: false
   {{- end }}
   ports:
-    - port: {{ .Values.service.httpPort }}
+    - port: {{ index .Values.config.user "nem.httpPort" }}
       {{- if eq .Values.service.type "NodePort" }}
-      nodePort: {{ .Values.service.httpPort }}
+      nodePort: {{ index .Values.config.user "nem.httpPort" }}
       {{- end }}
       protocol: TCP
       name: http
-    - port: {{ .Values.service.httpsPort }}
+    - port: {{ index .Values.config.user "nem.httpsPort" }}
       {{- if eq .Values.service.type "NodePort" }}
-      nodePort: {{ .Values.service.httpsPort }}
+      nodePort: {{ index .Values.config.user "nem.httpsPort" }}
       {{- end }}
       protocol: TCP
       name: https
-    - port: {{ .Values.service.wsPort }}
+    - port: {{ index .Values.config.user "nem.websocketPort" }}
       {{- if eq .Values.service.type "NodePort" }}
-      nodePort: {{ .Values.service.wsPort }}
+      nodePort: {{ index .Values.config.user "nem.websocketPort" }}
       {{- end }}
       protocol: TCP
       name: websocket

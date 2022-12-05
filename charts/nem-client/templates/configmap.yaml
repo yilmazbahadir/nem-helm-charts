@@ -5,7 +5,9 @@ metadata:
 data:
   configuser.properties: |
     {{- range $key, $value := .Values.config.user}}
+    {{- if $value}}
     {{ $key }}={{ $value }}
+    {{- end }}
     {{- end }}
   {{- if .Values.config.logalphaProperties }}
   logalpha.properties: |-
@@ -20,6 +22,6 @@ data:
     {{ .Values.config.peersConfigJson | nindent 4}}
   {{- end }}
 binaryData:
-  {{ if .Values.config.user.customNemesisFileBase64 }}
-  nemesis-file: {{ .Values.config.user.customNemesisFileBase64 }}
+  {{ if .Values.config.customNemesisFileBase64 }}
+  nemesis-file: {{ .Values.config.customNemesisFileBase64 }}
   {{- end }}

@@ -58,7 +58,7 @@ base64 -i nemesis.bin -o PATH_TO_FILE/nemesis-base64.txt
 2. Install helm chart by providing custom nemesis binary file as a value(--set-file):
 
 ```bash
-helm install testnet ./charts/nem-client --create-namespace --namespace=testnet --set-file config.user.customNemesisFileBase64= PATH_TO_FILE/nemesis-base64.txt --set clusterName=$(kubectl config view -o jsonpath='{.clusters[].name}{"\n"}') --set config.user.nem.network=testnet --set config.user.nis.bootKey=PrivateKey --set config.user.nis.bootName=MyNodeName
+helm install testnet ./charts/nem-client --create-namespace --namespace=testnet --set-file config.customNemesisFileBase64= PATH_TO_FILE/nemesis-base64.txt --set clusterName=$(kubectl config view -o jsonpath='{.clusters[].name}{"\n"}') --set config.user.nem.network=testnet --set config.user.nis.bootKey=PrivateKey --set config.user.nis.bootName=MyNodeName
 ```
 
 ## Values
@@ -68,14 +68,19 @@ helm install testnet ./charts/nem-client --create-namespace --namespace=testnet 
 | affinity | object | `{}` | Affinity configuration for pods |
 | clusterName | string | `"docker-desktop"` |  |
 | config | object | See `values.yaml` | Config object for nisproperties files |
+| config.customNemesisFileBase64 | string | `nil` | base64 encoded nemesis.bin file content |
 | config.dbProperties | string | `nil` | nis-client db.properties file content as multi-line string |
+| config.logalphaProperties | string | `nil` | nis-client logalpha.properties file content as multi-line string |
 | config.peersConfigJson | string | `nil` | nis-client peers-config.json file content as multi-line string |
 | config.user | object | See `values.yaml` | config-user.properties |
 | config.user."nem.host" | string | `"127.0.0.1"` | hostname/ip e.g. example.com |
 | config.user."nem.httpPort" | int | `7890` | api/peer http port |
 | config.user."nem.httpsPort" | int | `7891` | api/peer https port |
 | config.user."nem.network" | string | `"mainnet"` | nem network: mainnet|testnet |
+| config.user."nem.network.nemesisFilePath" | string | `nil` | nemesis.bin file path, leave empty when no custom nemesis files, set to /usersettings/nemesis.bin otherwise |
 | config.user."nem.websocketPort" | int | `7778` | api/peer websocket port |
+| config.user."nis.bootKey" | string | `nil` | main account private key @default new account will be generated and set |
+| config.user."nis.bootName" | string | `nil` | name of the NIS node |
 | containerSecurityContext | object | `{}` | The security context for containers |
 | extraContainerPorts | list | `[]` | Additional ports for the main container |
 | extraContainers | list | `[]` | Additional containers |

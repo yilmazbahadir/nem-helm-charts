@@ -33,13 +33,13 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: {{ .Values.service.httpPort }}
+              containerPort: {{ index .Values.config.user "nem.httpPort" }}
               protocol: TCP
             - name: https
-              containerPort: {{ .Values.service.httpsPort }}
+              containerPort: {{ index .Values.config.user "nem.httpsPort" }}
               protocol: TCP
             - name: websocket
-              containerPort: {{ .Values.service.wsPort }}
+              containerPort: {{ index .Values.config.user "nem.websocketPort" }}
           livenessProbe:
             {{- toYaml .Values.livenessProbe | nindent 12 }}
           readinessProbe:
@@ -47,10 +47,10 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-          - mountPath: /usersettings/config.properties
+          - mountPath: /usersettings/config-user.properties
             name: "config"
             subPath: "configuser.properties"
-          {{- if .Values.config.user.customNemesisFileBase64 }}
+          {{- if .Values.config.customNemesisFileBase64 }}
           - mountPath: /usersettings/nemesis.bin
             name: "config"
             subPath: "nemesis-file"
@@ -75,7 +75,7 @@ spec:
           items:
           - key: "configuser.properties"
             path: "configuser.properties"
-          {{- if .Values.config.user.customNemesisFileBase64 }}
+          {{- if .Values.config.customNemesisFileBase64 }}
           - key: "nemesis-file"
             path: "nemesis-file"
           {{- end }}

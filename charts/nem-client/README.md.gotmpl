@@ -60,7 +60,7 @@ base64 -i nemesis.bin -o PATH_TO_FILE/nemesis-base64.txt
 2. Install helm chart by providing custom nemesis binary file as a value(--set-file):
 
 ```bash
-helm install testnet ./charts/nem-client --create-namespace --namespace=testnet --set-file config.user.customNemesisFileBase64= PATH_TO_FILE/nemesis-base64.txt --set clusterName=$(kubectl config view -o jsonpath='{.clusters[].name}{"\n"}') --set config.user.nem.network=testnet --set config.user.nis.bootKey=PrivateKey --set config.user.nis.bootName=MyNodeName
+helm install testnet ./charts/nem-client --create-namespace --namespace=testnet --set-file config.customNemesisFileBase64= PATH_TO_FILE/nemesis-base64.txt --set clusterName=$(kubectl config view -o jsonpath='{.clusters[].name}{"\n"}') --set config.user.nem.network=testnet --set config.user.nis.bootKey=PrivateKey --set config.user.nis.bootName=MyNodeName
 ```
 
 {{ template "chart.valuesSection" . }}
