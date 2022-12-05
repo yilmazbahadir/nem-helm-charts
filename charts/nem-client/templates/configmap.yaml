@@ -1,7 +1,9 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: config-map
+  name: {{ include "nem-client.fullname" . }}
+  labels:
+    {{- include "nem-client.labels" . | nindent 4 }}
 data:
   configuser.properties: |
     {{- range $key, $value := .Values.config.user}}

@@ -23,16 +23,15 @@ image:
 # -- Image pull secrets for Docker images
 imagePullSecrets: []
 
-#TODO: we may not need this
-clusterName: docker-desktop
-
 # -- Config object for nisproperties files
 # @default -- See `values.yaml`
 config:
   # -- config-user.properties
   # @default -- See `values.yaml`
   user:
-    # -- nem network: mainnet|testnet
+    # -- folder database and log files should be located
+    nem.folder: /app/data
+    # -- mainnet|testnet
     nem.network: mainnet
     # -- api/peer http port
     nem.httpPort: 7890
@@ -58,17 +57,60 @@ config:
   # config.peersConfigJson -- (string) nis-client peers-config.json file content as multi-line string
   peersConfigJson:
 
-serviceAccount:
-  # -- Specifies whether a service account should be created
-  create: true
-  # -- Annotations to add to the service account
+
+service:
+  # -- Service type: ClusterIP|LoadBalancer|NodePort
+  type: ClusterIP
+
+ingress:
+  enabled: false
+  className: ""
   annotations: {}
-  # -- The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
-  name: ""
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: localhost
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+# -- Annotations for the StatefulSet
+annotations: {}
+
+persistence:
+  # -- Uses an EmptyDir when not enabled
+  enabled: true
+  # -- Use an existing PVC when persistence.enabled
+  existingClaim: null
+  # -- Access mode for the volume claim template
+  accessModes:
+  - ReadWriteOnce
+  # -- Requested size for volume claim template
+  size: 8Gi
+  # -- Use a specific storage class
+  # E.g 'local-path' for local storage to achieve best performance
+  # Read more (https://github.com/rancher/local-path-provisioner)
+  storageClassName: local-path
+  # -- Annotations for volume claim template
+  annotations:
+    "helm.sh/resource-policy": keep
+  # -- Selector for volume claim template
+  selector: {}
+  #   matchLabels:
+  #     app.kubernetes.io/name: something
 
 # -- Pod annotations
 podAnnotations: {}
+
+# -- Pod management policy
+podManagementPolicy: OrderedReady
+
+# -- Pod labels
+podLabels: {}
 
 # -- The security context for pods
 # @default -- See `values.yaml`
@@ -80,6 +122,51 @@ podSecurityContext:
 
 # -- The security context for containers
 containerSecurityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+# -- The application is given a certain amount of time to shutdown before it's terminated forcefully
+terminationGracePeriodSeconds: 300
+
+# TODO using the rules?
+rbac:
+  # -- Specifies whether RBAC resources are to be created
+  create: true
+  # -- Required ClusterRole rules
+  # @default -- See `values.yaml`
+  clusterRules:
+     # Required to obtain the nodes external IP
+    - apiGroups: [""]
+      resources:
+      - "nodes"
+      verbs:
+      - "get"
+      - "list"
+      - "watch"
+  # -- Required ClusterRole rules
+  # @default -- See `values.yaml`
+  rules:
+    # Required to get information about the services nodePort.
+    - apiGroups: [""]
+      resources:
+      - "services"
+      verbs:
+      - "get"
+      - "list"
+      - "watch"
+
+serviceAccount:
+  # -- Specifies whether a service account should be created
+  create: true
+  # -- Annotations to add to the service account
+  annotations: {}
+  # -- The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
 
 # -- Liveness probe
 # @default -- See `values.yaml`
@@ -97,13 +184,9 @@ readinessProbe:
   initialDelaySeconds: 60
   periodSeconds: 10
 
-service:
-  # -- Service type: ClusterIP|LoadBalancer|NodePort
-  type: LoadBalancer
-
 # -- Update strategy for the StatefulSet
 updateStrategy:
-  # -- Update strategy type
+  # -- Update strategy type (RollingUpdate|OnDelete)
   type: RollingUpdate
 
 # -- Additional init containers
@@ -137,7 +220,7 @@ initChownData:
     # -- Container repository
     repository: busybox
     # -- Container tag
-    tag: "1.34.0"
+    tag: "1.35.0"
     # -- Container pull policy
     pullPolicy: IfNotPresent
   # -- Resource requests and limits
@@ -148,22 +231,6 @@ initChownData:
   #  requests:
   #    cpu: 100m
   #    memory: 128Mi
-
-ingress:
-  enabled: false
-  className: ""
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-  hosts:
-    - host: localhost
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious

@@ -19,13 +19,17 @@
   kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.4.0/deploy/static/provider/cloud/deploy.yaml
   ```
 - Helm v3.10.1
+- K8s Local Path Provisioner (v0.0.23) (if Values.persistence.enabled is true(default))
+  ````
+  kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.23/deploy/local-path-storage.yaml
+  ```
 
 ## Installation
 
 ### Deployment
 To deploy nem-client helm chart to local K8s environment for mainnet:
 ```bash
-helm install mainnet ./charts/nem-client --create-namespace --namespace=mainnet --set clusterName=$(kubectl config view -o jsonpath='{.clusters[].name}{"\n"}') --set config.user.nem.network=mainnet --set config.user.nis.bootKey=PrivateKey --set config.user.nis.bootName=MyNodeName
+helm install mainnet ./charts/nem-client --create-namespace --namespace=mainnet --set config.user.nem.network=mainnet --set config.user.nis.bootKey=PrivateKey --set config.user.nis.bootName=MyNodeName
 ```
 To list the Helm packages:
 ```bash
@@ -45,7 +49,7 @@ helm uninstall mainnet --namespace=mainnet
 ### Testnet Deployment
 To deploy nem-client helm chart to local K8s environment for testnet:
 ```bash
-helm install testnet ./charts/nem-client --create-namespace --namespace=testnet --set clusterName=$(kubectl config view -o jsonpath='{.clusters[].name}{"\n"}') --set config.user.nem.network=testnet --set config.user.nis.bootKey=PrivateKey --set config.user.nis.bootName=MyNodeName
+helm install testnet ./charts/nem-client --create-namespace --namespace=testnet --set config.user.nem.network=testnet --set config.user.nis.bootKey=PrivateKey --set config.user.nis.bootName=MyNodeName
 ```
 Please do not forget to add `--namespace=testnet` to all of the subsequent commands.
 
@@ -60,7 +64,7 @@ base64 -i nemesis.bin -o PATH_TO_FILE/nemesis-base64.txt
 2. Install helm chart by providing custom nemesis binary file as a value(--set-file):
 
 ```bash
-helm install testnet ./charts/nem-client --create-namespace --namespace=testnet --set-file config.customNemesisFileBase64= PATH_TO_FILE/nemesis-base64.txt --set clusterName=$(kubectl config view -o jsonpath='{.clusters[].name}{"\n"}') --set config.user.nem.network=testnet --set config.user.nis.bootKey=PrivateKey --set config.user.nis.bootName=MyNodeName
+helm install testnet ./charts/nem-client --create-namespace --namespace=testnet --set-file config.customNemesisFileBase64= PATH_TO_FILE/nemesis-base64.txt --set config.user.nem.network=testnet --set config.user.nis.bootKey=PrivateKey --set config.user.nis.bootName=MyNodeName
 ```
 
 {{ template "chart.valuesSection" . }}

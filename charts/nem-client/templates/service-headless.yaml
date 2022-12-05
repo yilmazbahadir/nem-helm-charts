@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "nem-client.fullname" . }}-headless
+  labels:
+    {{- include "nem-client.labels" . | nindent 4 }}
+spec:
+  clusterIP: None
+  ports:
+    - port: {{ index .Values.config.user "nem.httpPort" }}
+      protocol: TCP
+      name: http
+    - port: {{ index .Values.config.user "nem.httpsPort" }}
+      protocol: TCP
+      name: https
+    - port: {{ index .Values.config.user "nem.websocketPort" }}
+      {{- if eq .Values.service.type "NodePort" }}
+      nodePort: {{ index .Values.config.user "nem.websocketPort" }}
+      {{- end }}
+      protocol: TCP
+      name: websocket
+  {{- if .Values.extraPorts }}
+    {{ toYaml .Values.extraPorts | nindent 4}}
+  {{- end }}
+  selector:
+    {{- include "nem-client.selectorLabels" . | nindent 4 }}

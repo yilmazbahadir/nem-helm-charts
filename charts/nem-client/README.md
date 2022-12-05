@@ -17,13 +17,17 @@ nem-client Helm chart for Kubernetes
   kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.4.0/deploy/static/provider/cloud/deploy.yaml
   ```
 - Helm v3.10.1
+- K8s Local Path Provisioner (v0.0.23) (if Values.persistence.enabled is true(default))
+  ````
+  kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.23/deploy/local-path-storage.yaml
+  ```
 
 ## Installation
 
 ### Deployment
 To deploy nem-client helm chart to local K8s environment for mainnet:
 ```bash
-helm install mainnet ./charts/nem-client --create-namespace --namespace=mainnet --set clusterName=$(kubectl config view -o jsonpath='{.clusters[].name}{"\n"}') --set config.user.nem.network=mainnet --set config.user.nis.bootKey=PrivateKey --set config.user.nis.bootName=MyNodeName
+helm install mainnet ./charts/nem-client --create-namespace --namespace=mainnet --set config.user.nem.network=mainnet --set config.user.nis.bootKey=PrivateKey --set config.user.nis.bootName=MyNodeName
 ```
 To list the Helm packages:
 ```bash
@@ -43,7 +47,7 @@ helm uninstall mainnet --namespace=mainnet
 ### Testnet Deployment
 To deploy nem-client helm chart to local K8s environment for testnet:
 ```bash
-helm install testnet ./charts/nem-client --create-namespace --namespace=testnet --set clusterName=$(kubectl config view -o jsonpath='{.clusters[].name}{"\n"}') --set config.user.nem.network=testnet --set config.user.nis.bootKey=PrivateKey --set config.user.nis.bootName=MyNodeName
+helm install testnet ./charts/nem-client --create-namespace --namespace=testnet --set config.user.nem.network=testnet --set config.user.nis.bootKey=PrivateKey --set config.user.nis.bootName=MyNodeName
 ```
 Please do not forget to add `--namespace=testnet` to all of the subsequent commands.
 
@@ -58,7 +62,7 @@ base64 -i nemesis.bin -o PATH_TO_FILE/nemesis-base64.txt
 2. Install helm chart by providing custom nemesis binary file as a value(--set-file):
 
 ```bash
-helm install testnet ./charts/nem-client --create-namespace --namespace=testnet --set-file config.customNemesisFileBase64= PATH_TO_FILE/nemesis-base64.txt --set clusterName=$(kubectl config view -o jsonpath='{.clusters[].name}{"\n"}') --set config.user.nem.network=testnet --set config.user.nis.bootKey=PrivateKey --set config.user.nis.bootName=MyNodeName
+helm install testnet ./charts/nem-client --create-namespace --namespace=testnet --set-file config.customNemesisFileBase64= PATH_TO_FILE/nemesis-base64.txt --set config.user.nem.network=testnet --set config.user.nis.bootKey=PrivateKey --set config.user.nis.bootName=MyNodeName
 ```
 
 ## Values
@@ -66,17 +70,18 @@ helm install testnet ./charts/nem-client --create-namespace --namespace=testnet 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | affinity | object | `{}` | Affinity configuration for pods |
-| clusterName | string | `"docker-desktop"` |  |
+| annotations | object | `{}` | Annotations for the StatefulSet |
 | config | object | See `values.yaml` | Config object for nisproperties files |
 | config.customNemesisFileBase64 | string | `nil` | base64 encoded nemesis.bin file content |
 | config.dbProperties | string | `nil` | nis-client db.properties file content as multi-line string |
 | config.logalphaProperties | string | `nil` | nis-client logalpha.properties file content as multi-line string |
 | config.peersConfigJson | string | `nil` | nis-client peers-config.json file content as multi-line string |
 | config.user | object | See `values.yaml` | config-user.properties |
+| config.user."nem.folder" | string | `"/app/data"` | folder database and log files should be located |
 | config.user."nem.host" | string | `"127.0.0.1"` | hostname/ip e.g. example.com |
 | config.user."nem.httpPort" | int | `7890` | api/peer http port |
 | config.user."nem.httpsPort" | int | `7891` | api/peer https port |
-| config.user."nem.network" | string | `"mainnet"` | nem network: mainnet|testnet |
+| config.user."nem.network" | string | `"mainnet"` | mainnet|testnet |
 | config.user."nem.network.nemesisFilePath" | string | `nil` | nemesis.bin file path, leave empty when no custom nemesis files, set to /usersettings/nemesis.bin otherwise |
 | config.user."nem.websocketPort" | int | `7778` | api/peer websocket port |
 | config.user."nis.bootKey" | string | `nil` | main account private key @default new account will be generated and set |
@@ -103,21 +108,34 @@ helm install testnet ./charts/nem-client --create-namespace --namespace=testnet 
 | initChownData.enabled | bool | `true` | Init container to set the correct permissions to access data directories |
 | initChownData.image.pullPolicy | string | `"IfNotPresent"` | Container pull policy |
 | initChownData.image.repository | string | `"busybox"` | Container repository |
-| initChownData.image.tag | string | `"1.34.0"` | Container tag |
+| initChownData.image.tag | string | `"1.35.0"` | Container tag |
 | initChownData.resources | object | `{}` | Resource requests and limits |
 | initContainers | list | `[]` | Additional init containers |
 | livenessProbe | object | See `values.yaml` | Liveness probe |
 | nameOverride | string | `""` | Overrides the chart's name |
 | nodeSelector | object | `{}` |  |
+| persistence.accessModes | list | `["ReadWriteOnce"]` | Access mode for the volume claim template |
+| persistence.annotations | object | `{"helm.sh/resource-policy":"keep"}` | Annotations for volume claim template |
+| persistence.enabled | bool | `true` | Uses an EmptyDir when not enabled |
+| persistence.existingClaim | string | `nil` | Use an existing PVC when persistence.enabled |
+| persistence.selector | object | `{}` | Selector for volume claim template |
+| persistence.size | string | `"8Gi"` | Requested size for volume claim template |
+| persistence.storageClassName | string | `"local-path"` | Use a specific storage class E.g 'local-path' for local storage to achieve best performance Read more (https://github.com/rancher/local-path-provisioner) |
 | podAnnotations | object | `{}` | Pod annotations |
+| podLabels | object | `{}` | Pod labels |
+| podManagementPolicy | string | `"OrderedReady"` | Pod management policy |
 | podSecurityContext | object | See `values.yaml` | The security context for pods |
+| rbac.clusterRules | list | See `values.yaml` | Required ClusterRole rules |
+| rbac.create | bool | `true` | Specifies whether RBAC resources are to be created |
+| rbac.rules | list | See `values.yaml` | Required ClusterRole rules |
 | readinessProbe | object | See `values.yaml` | Readiness probe |
 | replicaCount | int | `1` | Number of replicas |
 | resources | object | `{}` |  |
-| service.type | string | `"LoadBalancer"` | Service type: ClusterIP|LoadBalancer|NodePort |
+| service.type | string | `"ClusterIP"` | Service type: ClusterIP|LoadBalancer|NodePort |
 | serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
 | serviceAccount.create | bool | `true` | Specifies whether a service account should be created |
 | serviceAccount.name | string | `""` | The name of the service account to use. If not set and create is true, a name is generated using the fullname template |
+| terminationGracePeriodSeconds | int | `300` | The application is given a certain amount of time to shutdown before it's terminated forcefully |
 | tolerations | list | `[]` | Tolerations for pods # ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/ |
 | updateStrategy | object | `{"type":"RollingUpdate"}` | Update strategy for the StatefulSet |
-| updateStrategy.type | string | `"RollingUpdate"` | Update strategy type |
+| updateStrategy.type | string | `"RollingUpdate"` | Update strategy type (RollingUpdate|OnDelete) |

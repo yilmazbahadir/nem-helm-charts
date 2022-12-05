@@ -1,0 +1,150 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "nem-client.fullname" . }}
+  labels:
+    {{- include "nem-client.labels" . | nindent 4 }}
+  annotations:
+    {{- toYaml .Values.annotations | nindent 4 }}
+spec:
+  podManagementPolicy: {{ .Values.podManagementPolicy }}
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "nem-client.selectorLabels" . | nindent 6 }}
+  serviceName: {{ include "nem-client.fullname" . }}-headless
+  updateStrategy:
+    {{- toYaml .Values.updateStrategy | nindent 4 }}
+  template:
+    metadata:
+      labels:
+        {{- include "nem-client.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "nem-client.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+      {{- if .Values.initContainers }}
+        {{- toYaml .Values.initContainers | nindent 8 }}
+      {{- end }}
+      {{ $nemFolder := (index .Values.config.user "nem.folder" | quote) }}
+      {{- if .Values.initChownData.enabled }}
+        - name: init-chown-data
+          image: "{{ .Values.initChownData.image.repository }}:{{ .Values.initChownData.image.tag }}"
+          imagePullPolicy: {{ .Values.initChownData.image.pullPolicy }}
+          securityContext:
+            runAsNonRoot: false
+            runAsUser: 0
+          command: ["chown", "-R", "{{ .Values.podSecurityContext.runAsUser }}:{{ .Values.podSecurityContext.runAsGroup }}", {{ $nemFolder }}]
+          resources:
+      {{- toYaml .Values.initChownData.resources | nindent 12 }}
+          volumeMounts:
+            - name: nem-data
+              mountPath: {{ $nemFolder }}
+      {{- end }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          volumeMounts:
+            {{- if .Values.extraVolumeMounts }}
+              {{ toYaml .Values.extraVolumeMounts | nindent 12}}
+            {{- end }}
+            - name: nem-data
+              mountPath: {{ $nemFolder }}
+            - mountPath: /usersettings/config-user.properties
+              name: "config"
+              subPath: "configuser.properties"
+            {{- if .Values.config.customNemesisFileBase64 }}
+            - mountPath: /usersettings/nemesis.bin
+              name: "config"
+              subPath: "nemesis-file"
+            {{- end }}
+            {{- if .Values.config.peersConfigJson }}
+            - mountPath: /usersettings/{{ include "peers.json.filename" .}}
+              name: "config"
+              subPath: {{ include "peers.json.filename" .}}
+            {{- end }}
+            {{- if .Values.config.dbProperties }}
+            - mountPath: /usersettings/db.properties
+              name: "config"
+              subPath: "db.properties"
+            {{- end }}
+          ports:
+            {{- if .Values.extraContainerPorts }}
+              {{ toYaml .Values.extraContainerPorts | nindent 12}}
+            {{- end }}
+            - name: http
+              containerPort: {{ index .Values.config.user "nem.httpPort" }}
+              protocol: TCP
+            - name: https
+              containerPort: {{ index .Values.config.user "nem.httpsPort" }}
+              protocol: TCP
+            - name: websocket
+              containerPort: {{ index .Values.config.user "nem.websocketPort" }}
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          env:
+          {{- if .Values.extraEnv }}
+            {{- toYaml .Values.extraEnv | nindent 12 }}
+          {{- end }}
+      {{- if .Values.extraContainers }}
+        {{ toYaml .Values.extraContainers | nindent 8}}
+      {{- end }}
+      nodeSelector:
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+      affinity:
+        {{- toYaml .Values.affinity | nindent 8 }}
+      tolerations:
+        {{- toYaml .Values.tolerations | nindent 8 }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      volumes:
+      {{- if .Values.extraVolumes }}
+        {{ toYaml .Values.extraVolumes | nindent 8}}
+      {{- end }}
+        - name: config
+          configMap:
+            name: {{ include "nem-client.fullname" . }}
+  {{- if not .Values.persistence.enabled }}
+        - name: nem-data
+          emptyDir: {}
+  {{- else if .Values.persistence.existingClaim }}
+        - name: nem-data
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim }}
+  {{- else }}
+  volumeClaimTemplates:
+  - metadata:
+      name: nem-data
+      annotations:
+        {{- toYaml .Values.persistence.annotations | nindent 8 }}
+    spec:
+      accessModes:
+        {{- toYaml .Values.persistence.accessModes | nindent 8 }}
+      resources:
+        requests:
+          storage: {{ .Values.persistence.size | quote }}
+      storageClassName: {{ .Values.persistence.storageClassName }}
+      {{- if .Values.persistence.selector }}
+      selector:
+        {{- toYaml .Values.persistence.selector | nindent 8 }}
+      {{- end }}
+  {{- end }}
