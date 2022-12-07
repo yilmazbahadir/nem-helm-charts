@@ -12,9 +12,36 @@ nem-client Helm chart for Kubernetes
 
 ## Requirements
 - Kubernetes(K8s) v1.25.2
-  - ingress-nginx controller plugin
-  ```bash
-  kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.4.0/deploy/static/provider/cloud/deploy.yaml
+  if .Values.ingress.enabled is true then
+  Create a file named `values-nginx-controller.yaml` with the following content:
+  ```yaml
+    # configure the tcp configmap
+    tcp:
+      7890: localhost:7890
+      7891: localhost:7891
+      7778: localhost:7778
+
+    # enable the service and expose the tcp ports.
+    # be careful as this will potentially make them
+    # available on the public web
+    controller:
+      service:
+        enabled: true
+        ports:
+          http: 80
+          https: 443
+          apiHttp: 7890
+          apiHttps: 7891
+          apiWs: 7778
+        targetPorts:
+          http: http
+          https: https
+          apiHttp: apiHttp
+          apiHttps: apiHttps
+          apiWs: apiWs
+  ```
+  ```
+  helm install ingress-nginx ingress-nginx/ingress-nginx --create-namespace --namespace=ingress-nginx -f ./values-nginx-controller.yaml
   ```
 - Helm v3.10.1
 - K8s Local Path Provisioner (v0.0.23) (if Values.persistence.enabled is true(default))
@@ -131,6 +158,7 @@ helm install testnet ./charts/nem-client --create-namespace --namespace=testnet 
 | readinessProbe | object | See `values.yaml` | Readiness probe |
 | replicaCount | int | `1` | Number of replicas |
 | resources | object | `{}` |  |
+| service.annotations | object | `{}` |  |
 | service.type | string | `"ClusterIP"` | Service type: ClusterIP|LoadBalancer|NodePort |
 | serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
 | serviceAccount.create | bool | `true` | Specifies whether a service account should be created |

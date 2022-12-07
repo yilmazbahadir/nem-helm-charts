@@ -61,6 +61,7 @@ config:
 service:
   # -- Service type: ClusterIP|LoadBalancer|NodePort
   type: ClusterIP
+  annotations: {}
 
 ingress:
   enabled: false

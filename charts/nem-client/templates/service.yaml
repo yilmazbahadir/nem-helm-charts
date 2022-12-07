@@ -4,6 +4,8 @@ metadata:
   name: {{ include "nem-client.fullname" . }}
   labels:
     {{- include "nem-client.labels" . | nindent 4 }}
+  annotations:
+    {{- toYaml .Values.service.annotations | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   {{- if eq .Values.service.type "LoadBalancer" }}
