@@ -8,7 +8,7 @@ metadata:
     {{- toYaml .Values.annotations | nindent 4 }}
 spec:
   podManagementPolicy: {{ .Values.podManagementPolicy }}
-  replicas: {{ .Values.replicaCount }}
+  replicas: 1
   selector:
     matchLabels:
       {{- include "nem-client.selectorLabels" . | nindent 6 }}
@@ -94,7 +94,8 @@ spec:
             - name: https
               containerPort: {{ index .Values.config.user "nem.httpsPort" }}
               protocol: TCP
-            - name: websocket
+            - name: 7778-tcp
+              protocol: TCP
               containerPort: {{ index .Values.config.user "nem.websocketPort" }}
           livenessProbe:
             {{- toYaml .Values.livenessProbe | nindent 12 }}

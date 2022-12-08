@@ -29,6 +29,9 @@ spec:
       nodePort: {{ index .Values.config.user "nem.websocketPort" }}
       {{- end }}
       protocol: TCP
-      name: websocket
+      name: 7778-tcp
+      {{- if .Values.extraPorts }}
+        {{ toYaml .Values.extraPorts | nindent 4}}
+      {{- end }}
   selector:
     {{- include "nem-client.selectorLabels" . | nindent 4 }}

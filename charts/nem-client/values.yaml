@@ -8,9 +8,6 @@ nameOverride: ""
 # -- Overrides the chart's computed fullname
 fullnameOverride: ""
 
-# -- Number of replicas
-replicaCount: 1
-
 image:
   # -- nis-client image repository
   repository: nis-client
@@ -206,7 +203,15 @@ extraVolumes: []
 extraVolumeMounts: []
 
 # -- Additional ports. Useful when using extraContainers or extraContainerPorts
+# @default -- See `values.yaml`
 extraPorts: []
+  # - port: 8890
+  #   protocol: TCP
+  #   name: 8890-tcp
+  # - port: 8891
+  #   protocol: TCP
+  #   name: 8891-tcp
+
 
 # -- Additional ports for the main container
 extraContainerPorts: []
