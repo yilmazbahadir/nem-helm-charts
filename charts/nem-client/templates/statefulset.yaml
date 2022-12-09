@@ -35,7 +35,7 @@ spec:
       {{- if .Values.initContainers }}
         {{- toYaml .Values.initContainers | nindent 8 }}
       {{- end }}
-      {{ $nemFolder := (index .Values.config.user "nem.folder" | quote) }}
+      {{- $nemFolder := (index .Values.config.user "nem.folder" | quote) }}
       {{- if .Values.initChownData.enabled }}
         - name: init-chown-data
           image: "{{ .Values.initChownData.image.repository }}:{{ .Values.initChownData.image.tag }}"
@@ -70,7 +70,7 @@ spec:
               name: "config"
               subPath: "configuser.properties"
             {{- if .Values.config.customNemesisFileBase64 }}
-            - mountPath: /usersettings/nemesis.bin
+            - mountPath: /usersettings/custom-nemesis.bin
               name: "config"
               subPath: "nemesis-file"
             {{- end }}
@@ -110,13 +110,6 @@ spec:
       {{- if .Values.extraContainers }}
         {{ toYaml .Values.extraContainers | nindent 8}}
       {{- end }}
-      nodeSelector:
-        {{- toYaml .Values.nodeSelector | nindent 8 }}
-      affinity:
-        {{- toYaml .Values.affinity | nindent 8 }}
-      tolerations:
-        {{- toYaml .Values.tolerations | nindent 8 }}
-      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       volumes:
       {{- if .Values.extraVolumes }}
         {{ toYaml .Values.extraVolumes | nindent 8}}
@@ -124,6 +117,28 @@ spec:
         - name: config
           configMap:
             name: {{ include "nem-client.fullname" . }}
+            items:
+              - key: "configuser.properties"
+                path: "configuser.properties"
+              {{- if .Values.config.customNemesisFileBase64 }}
+              - key: "nemesis-file"
+                path: "nemesis-file"
+              {{- end }}
+              {{- if .Values.config.peersConfigJson }}
+              - key: {{ include "peers.json.filename" . | quote}}
+                path: {{ include "peers.json.filename" . | quote}}
+              {{- end }}
+              {{- if .Values.config.dbProperties }}
+              - key: "db.properties"
+                path: "db.properties"
+              {{- end }}
+      nodeSelector:
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+      affinity:
+        {{- toYaml .Values.affinity | nindent 8 }}
+      tolerations:
+        {{- toYaml .Values.tolerations | nindent 8 }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
   {{- if not .Values.persistence.enabled }}
         - name: nem-data
           emptyDir: {}

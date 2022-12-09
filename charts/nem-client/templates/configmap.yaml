@@ -24,6 +24,6 @@ data:
     {{ .Values.config.peersConfigJson | nindent 4}}
   {{- end }}
 binaryData:
-  {{ if .Values.config.customNemesisFileBase64 }}
+  {{- if .Values.config.customNemesisFileBase64 }}
   nemesis-file: {{ .Values.config.customNemesisFileBase64 }}
   {{- end }}

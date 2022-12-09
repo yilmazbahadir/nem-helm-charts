@@ -77,17 +77,18 @@ helm install testnet ./charts/nem-client --create-namespace --namespace=testnet 
 Please do not forget to add `--namespace=testnet` to all of the subsequent commands.
 
 ### Custom Testnet Deployment with Generated Nemesis File
-Use [nemesis-generator](https://github.com/NemProject/nemesis-generator) to generate a custom nemesis file for the initial block.
+Use [nemesis-generator](https://github.com/NemProject/nemesis-generator) to generate a custom nemesis file for the initial block and the network configuration.
 
 For testnet deployment with custom nemesis binary:
 1. Encode nemesis binary file with Base64 to a (nemesis-base64.)txt file
 ```bash
 base64 -i nemesis.bin -o PATH_TO_FILE/nemesis-base64.txt
 ```
-2. Install helm chart by providing custom nemesis binary file as a value(--set-file):
+2. Copy `peers-config_testnet.json` file to the current directory.
+3. Install helm chart by providing custom nemesis binary file as a value(--set-file):
 
 ```bash
-helm install testnet ./charts/nem-client --create-namespace --namespace=testnet --set-file config.customNemesisFileBase64= PATH_TO_FILE/nemesis-base64.txt --set config.user.nem.network=testnet --set config.user.nis.bootKey=PrivateKey --set config.user.nis.bootName=MyNodeName
+helm install testnet ./charts/nem-client --create-namespace --namespace=testnet --set-file config.customNemesisFileBase64= PATH_TO_FILE/nemesis-base64.txt --set-file config.peersConfigJson=./peers-config_testnet.json --set config.user.nem.network=testnet --set config.user.nis.bootKey=PrivateKey --set config.user.nis.bootName=MyNodeName
 ```
 
 ## Values
