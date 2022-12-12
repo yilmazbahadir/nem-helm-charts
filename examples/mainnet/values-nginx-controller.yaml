@@ -1,0 +1,18 @@
+# configure the tcp configmap
+tcp:
+  # 7890: localhost:7890
+  # 7891: localhost:7891
+  7778: localhost:7778
+
+# enable the service and expose the tcp ports.
+# be careful as this will potentially make them
+# available on the public web
+controller:
+  service:
+    enabled: true
+    ports:
+      http: 7890
+      https: 7891
+    targetPorts:
+      http: http
+      https: https

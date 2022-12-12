@@ -1,0 +1,31 @@
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: localhost-node2
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+          backend:
+            service:
+              name: nem-client
+              port: 7890
+        - path: /
+          pathType: ImplementationSpecific
+          backend:
+            service:
+              name: nem-client
+              port: 7891
+        - path: /
+          pathType: ImplementationSpecific
+          backend:
+            service:
+              name: nem-client
+              port: 7778
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local

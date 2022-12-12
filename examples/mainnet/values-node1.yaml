@@ -1,0 +1,28 @@
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: localhost-node1
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+          backend:
+            service:
+              port: 7890
+        - path: /
+          pathType: ImplementationSpecific
+          backend:
+            service:
+              port: 7891
+        - path: /
+          pathType: ImplementationSpecific
+          backend:
+            service:
+              port: 7778
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
