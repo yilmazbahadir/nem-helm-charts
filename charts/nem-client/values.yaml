@@ -10,17 +10,16 @@ fullnameOverride: ""
 
 image:
   # -- nis-client image repository
-  repository: nis-client
+  repository: nemofficial/nis-client
   # -- nis-client image tag
-  tag: "latest"
-  # TODO => latest@sha256:cec3ca42c9f7af54fe0b8e7840aee50d322182bb66df28d5bbe645efa2881a7b
+  tag: "0.6.100@sha256:8ccfdb5de8cfce01c91c599fe2c91ddafe74940923e3d1bda667137747dd7dcd"
   # -- nis-client image pull policy
   pullPolicy: IfNotPresent
 
 # -- Image pull secrets for Docker images
 imagePullSecrets: []
 
-# -- Config object for nisproperties files
+# -- Config object for nis properties files
 # @default -- See `values.yaml`
 config:
   # -- config-user.properties
@@ -72,9 +71,6 @@ ingress:
         - path: /
           pathType: ImplementationSpecific
   tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
 
 # -- Annotations for the StatefulSet
 annotations: {}
